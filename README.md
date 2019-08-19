@@ -6,6 +6,9 @@ muduo是一个高质量的事件驱动型的网络库，使用的non-blocking IO
 在linux下的话，可以把事件当做一个文件描述符，换句话也就是说一个file descriptor只能由一个线程读写。一个线程最多只有一个EventLoop，而EventLoop中的循环即是在不停的监视这些描述符，当描述符可读或可写的时候，通过回调函数提供给用户处理。  
 这样我们可以很方便地把不同的socket套接字的描述符放到不同的线程去， 也可以把一些socket放到一个线程里，这样这些socket就是线程安全的，因为始终只有EventLoo所在线程在读写它们，极大的降低了我们的编程复杂性。
 
+# Envoirment
+- OS: Ubuntu 14.04
+- Complier: g++ 7.4.0
 # muduo主要技术点有：
 1.使用了Poll、Epoll水平触发的IO多路复用技术，非阻塞IO并实现应用层缓冲区，使用Multiple Reactors模式  
 2.IO模型为：Multiple Reactors(one loop per thread) + non-blocking IO + IO buffer  
