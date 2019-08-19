@@ -25,5 +25,5 @@ muduo是一个高质量的事件驱动型的网络库，使用的non-blocking IO
 8. 简易的HTTP服务器实现，使用状态机解析HTTP请求  
 9. 支持优雅关闭连接  
 
-# muduo并发模型图示
+# muduo IO并发模型图示
 ![Image text](https://github.com/Canna031/muduo-study/blob/master/images/model.png)
