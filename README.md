@@ -9,13 +9,21 @@ muduo是一个高质量的事件驱动型的网络库，使用的non-blocking IO
 # Envoirment
 - OS: Ubuntu 14.04
 - Complier: g++ 7.4.0
+# build
+  ./build.sh
+# install
+  ./build.sh install
+
 # muduo主要技术点有：
-1.使用了Poll、Epoll水平触发的IO多路复用技术，非阻塞IO并实现应用层缓冲区，使用Multiple Reactors模式  
-2.IO模型为：Multiple Reactors(one loop per thread) + non-blocking IO + IO buffer  
-3.主线程只负责accept请求，并以Round Robin的方式分发给其它IO线程(兼计算线程)，锁的争用只会出现在主线程和某一特定线程中  
-4.将定时器注册到timer_fd，实现了定时器事件和IO事件通过Reactor模式统一进行处理，使用小根堆管理定时器  
-5.方便的日志输出接口、使用双缓冲区实现异步日志、实现了日志文件的滚动  
-6.实现了固定大小的线程池，避免线程频繁创建销毁的开销  
-7.为了减少资源泄漏，使用了智能指针等RAII机制  
-8.简易的HTTP服务器实现，使用状态机解析HTTP请求  
-9.支持优雅关闭连接  
+1. 使用了Poll、Epoll水平触发的IO多路复用技术，非阻塞IO并实现应用层缓冲区，使用Multiple Reactors模式  
+2. IO模型为：Multiple Reactors(one loop per thread) + non-blocking IO + IO buffer  
+3. 主线程只负责accept请求，并以Round Robin的方式分发给其它IO线程(兼计算线程)，锁的争用只会出现在主线程和某一特定线程中  
+4. 将定时器注册到timer_fd，实现了定时器事件和IO事件通过Reactor模式统一进行处理，使用小根堆管理定时器  
+5. 方便的日志输出接口、使用双缓冲区实现异步日志、实现了日志文件的滚动  
+6. 实现了固定大小的线程池，避免线程频繁创建销毁的开销  
+7. 为了减少资源泄漏，使用了智能指针等RAII机制  
+8. 简易的HTTP服务器实现，使用状态机解析HTTP请求  
+9. 支持优雅关闭连接  
+
+# muduo并发模型图示
+![Image text](https://github.com/Canna031/muduo-study/blob/master/images/model.png)
