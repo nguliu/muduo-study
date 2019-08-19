@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/muduo/4_muduo_study_again/extra_tests/Bind_without_reference_func_to_have_reference_func.cc
+boost/bind.hpp
+-
+boost/function.hpp
+-
+stdio.h
+-
+

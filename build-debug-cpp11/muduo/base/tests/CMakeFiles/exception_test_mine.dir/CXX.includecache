@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+..//muduo/base/Exception.h
+muduo/base/Types.h
+-
+execinfo.h
+-
+exception
+-
+
+..//muduo/base/Types.h
+stdint.h
+-
+string.h
+-
+string
+-
+assert.h
+-
+
+/home/muduo/4_muduo_study_again/muduo/base/tests/Exception_test_mine.cc
+muduo/base/Exception.h
+-
+stdio.h
+-
+

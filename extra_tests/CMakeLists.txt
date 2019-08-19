@@ -1,0 +1,9 @@
+
+add_executable(bind_without_reference_func_to_have_reference_func Bind_without_reference_func_to_have_reference_func.cc)
+
+add_executable(set_save_pair Set_save_pair.cc)
+
+add_executable(static_assert Static_assert.cc)
+target_link_libraries(static_assert muduo_base)
+
+add_executable(vector_swap_test Vector_swap_test.cc)

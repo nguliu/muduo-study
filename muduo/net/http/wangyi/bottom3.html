@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>注册账户</title>
+    
+    <style type="text/css">
+	.bor{
+		border:2px #666 solid;
+		width:50%;
+		height:550px;
+	}
+	</style>
+    
+    <script type="text/javascript" language="javascript">	
+	function checkAccountName()
+    {
+      var myform = document.getElementById("form1");
+	  var check = /^[0-9a-zA-Z_-]+$/;
+      if(!check.test(myform.accountName.value))
+      {
+        errAccountName.innerHTML = "<font color='red'>账户名不符合要求!</font>";
+        return false;
+      }else{
+        errAccountName.innerHTML = "<font color='green'>账户名符合要求!</font>";
+        return true;
+      }
+    }	
+	function checkPassword()
+    {
+      var myform = document.getElementById("form1");
+      var password = myform.password.value.length;
+      if(password < 1 || password>12)
+      {
+        errPassword.innerHTML = "<font color='red'>密码不符合要求!</font>";
+        return false;
+      }else{
+        errPassword.innerHTML = "<font color='green'>密码符合要求!</font>";
+        return true;
+      }
+    }
+	function ensurePassword()
+    {
+      var myform = document.getElementById("form1");
+      var enpassword = myform.enpassword.value.length;
+      if(enpassword < 1 || enpassword>12)
+      {
+        eerrpassword.innerHTML = "<font color='red'>密码不符合要求!</font>";
+        return false;
+      }else{
+        eerrpassword.innerHTML = "<font color='green'>密码符合要求!</font>";
+        return true;
+      }
+    }
+	function checkUserName()
+    {
+      var myform = document.getElementById("form1");
+      var userName = myform.userName.value.length;
+      if(userName < 2 || userName > 5)
+      {
+        errUserName.innerHTML = "<font color='red'>用户名不符合要求!</font>";
+        return false;
+      }else{
+        errUserName.innerHTML = "<font color='green'>用户名符合要求!</font>";
+        return true;
+      }
+    }
+    function checkPhoneNumber()
+    {
+	  var myform = document.getElementById("form1");
+	  var chenk = /^1[34578]\d{9}$/;
+	  if(!chenk.test(myform.phoneNumber.value))
+      {
+        errPhoneNumber.innerHTML = "<font color='red'>请输入标准移动手机号码!</font>";
+        return false;
+      }else{
+        errPhoneNumber.innerHTML = "<font color='green'>手机号码符合要求!</font>";
+        return true;
+      }
+    }
+    function checkEmail()
+    {
+      var myform = document.getElementById("form1");
+      var mail=/^[A-Za-z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+      if(!mail.test(myform.email.value))
+      {  
+        errEmail.innerHTML = "<font color='red'>email不符合要求</font>";
+        return false;
+      }else{
+        errEmail.innerHTML = "<font color='green'>email符合要求</font>";
+        return true;
+      }
+    }
+	
+    function checkForm()
+    {
+		checkAccountName();
+		checkPassword();
+		ensurePassword();
+		checkUserName();
+		checkPhoneNumber();
+		checkEmail();
+      if(checkAccountName() && checkPassword() && ensurePassword() && checkUserName() && checkPhoneNumber() && checkEmail())
+      {
+      	return true;  
+      }else{
+        return false;
+      }
+    }
+	
+	</script>
+</head>
+
+<body>
+    <center>
+    <h3>网易通行证</h3>
+    <div class="bor">
+    <table>
+    	<form id="form1" name="form1" method="post" action="ttt.jsp" onsubmit="return checkform()"><br/>
+    <tr><td>    
+        账&nbsp;&nbsp;户&nbsp;&nbsp;名：<input type="text" name="accountName" onblur="checkAccountName()" />@163.com<br/><br/>
+        <div id="errAccountName" align="right"></div>
+	</td></tr> 
+    <tr><td> 
+        密&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;码：<input type="password" name="password" onblur="checkPassword()" /><br/><br/>
+        <div id="errPassword" align="right"></div>
+ 	</td></tr> 
+    <tr><td> 
+        确认密码：<input type="password" name="enpassword" onblur="ensurePassword()" /><br/><br/>
+        <div id="eerrpassword" align="right"></div>
+	</td></tr> 
+    <tr><td> 
+        <input name="sex" type="radio" checked="checked"/>男&nbsp;&nbsp;&nbsp;&nbsp;
+        <input name="sex" type="radio" />女 <br/><br/>
+ 	</td></tr> 
+    <tr><td> 
+        真实姓名：<input type="text" name="userName" onblur="checkUserName()" /><br/><br/>
+        <div id="errUserName" align="right"></div>
+    </td></tr>
+    <tr><td> 
+        手机号码：<input type="text" name="phoneNumber" onblur="checkPhoneNumber()" /><br/><br/>
+        <div id="errPhoneNumber" align="right"></div>
+    </td></tr>  
+    <tr><td>    
+        电子邮箱：<input type="text" name="email" onblur="checkEmail()" /><br/><br/>
+        <div id="errEmail" align="right"></div>
+    </td></tr> 
+    <tr><td>     
+		<input type="submit" name="Submit" value="注册" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="reset" name="Submit2" value="重置" />
+    </td></tr>     
+		</form>
+    </table>
+    </div>
+    </center>
+</body>
+
+</html>

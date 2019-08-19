@@ -1,0 +1,1 @@
+/usr/bin/cc -g  -rdynamic CMakeFiles/test_server_shutdown.client.dir/Test_server_shutdown.client.c.o  -o ../../../../bin/test_server_shutdown.client 

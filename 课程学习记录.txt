@@ -1,0 +1,173 @@
+﻿个人性能优化位置：
+	1：muduo/base/AsyncLogging.cc:82
+	2：muduo/net/poller/EPollPoller.cc:71
+
+Base:
+	P10.Timestamp.{h,cc} UTC时间戳封装
+		test: muduo/base/tests/Timestamp_unittest.cc
+	P11.Atomic.h 原子操作与原子整数
+		test: muduo/base/tests/Atomic_unittest.cc
+	P12.Exception.{h,cc} 带stack trace 的异常基类
+		test: muduo/base/tests/Exception_test_mine.cc
+	P13.Thread.{h,cc} 线程封装
+		CurrentThread.h 对当前线程一些信息的封装
+		test: muduo/base/tests/Thread_test.cc
+	P14.Mutex.h(内含MutexLockGuard) 互斥器
+		Condition.h 条件变量，与Mutex 一同使用
+		CountDownLatch.{h,cc} “倒计时门闩”同步
+		test: muduo/base/tests/Mutex_test.cc
+			  muduo/base/tests/Condition_test.cc
+			  muduo/base/tests/CountDownLatch_test1.cc
+			  muduo/base/tests/CountDownLatch_test2.cc
+	P15.BlockingQueue.h 无界阻塞队列（消费者生产者队列）
+		BoundedBlockingQueue.h 有界阻塞队列
+		test: muduo/base/tests/BlockingQueue_bench.cc
+			  muduo/base/tests/BlockingQueue_test.cc
+			  muduo/base/tests/BoundedBlockingQueue_test.cc
+	P16.ThreadPool.{h,cc} 简单的固定大小线程池
+		test: muduo/base/tests/ThreadPool_test.cc
+	P17.Singleton.h 线程安全的单例类。通过pthread_once保证单例对象只构造一次
+		test: muduo/base/tests/Singleton_test.cc
+	P18.ThreadLocal.h 线程私有全局数据。通过所有线程共享一个pthread_key_t，每个线程绑定自己的私有数据
+		test: muduo/base/tests/ThreadLocal_test.cc
+			  SingletonThreadLocal_test.cc  建立两个所有线程共享的key，每个线程中通过key关联一个局部数据
+	P19.ThreadLocalSingleton.h 线程私有的单例类封装。通过__thread修饰一个单例类对象指针t_value_，
+		所有线程共享一个pthread_key_t，每个线程在上面关联自己的单例对象t_value_
+		test: muduo/base/tests/ThreadLocalSingleton_test.cc
+	P20.Logging.{h,cc} 简单的日志属性封装，其功能主要通过内部类Impl实现，可搭配AsyncLogging使用
+		日志输出过程为：生成一个匿名的Logger Obj(构造成员Impl时将所有系统信息格式化到其LogStream Obj) => 调用其stream方法返回Logger的
+						LogStream Obj => 调用LogStream Obj的operation<<将用户日志输出到缓冲区 => 析构匿名的匿名的Logger Obj(同时冲刷缓冲区)
+		即: Logger => Impl(格式化系统信息到缓冲区) => LogStream(格式化到缓冲区) => operation<<FixedBuffer(应用缓冲区) =>
+			g_output(写到系统输出缓冲区) => g_flush(冲刷系统缓冲区)
+		test: muduo/base/tests/Log_test1.cc
+			  muduo/base/tests/Log_test2.cc
+	P21.LogStream.{h,cc} 日志输出流封装，通过FixedBuffer实现应用层缓存
+		test: muduo/base/tests/LogStream_test.cc
+			  muduo/base/tests/LogStream_bench.cc
+	P22.LogFile.{h,cc} 实现日志文件的滚动（时间驱动或写入次数驱动）
+		test: muduo/base/tests/LogFile_test.cc
+			  muduo/base/tests/LogFile_bench.cc
+	P23.常见网络设计方案讲解
+	P24.常见网络设计方案讲解
+	
+		AsyncLogging.{h,cc} 异步日志实现AsyncLogging_test
+		test: muduo/base/tests/AsyncLogging_test.cc
+Net:
+	P25.TCP网络编程需要处理的三个半事件
+		EventLoop.{h,cc} 对IO线程的事件循环进行简单封装
+		test: muduo/net/tests/Reactor_test01.cc
+			  muduo/net/tests/Reactor_test02.cc
+	
+	P26.Channel.{h,cc} Channel是对文件描述符的封装，用于对每个fd的事件进行响应和分发，由EventLoop内的Poller进行管理
+		EventLoop.{h,cc} 进行EventLoop事件循环，通过Poller查询已连接的socket、timerfd等，处理活跃channel。
+		Poller.{h,cc} 对IO复用的封装，查询当前管理的所有Channel的事件
+		|-- DefaultPoller.cc 根据环境变量 MUDUO_USE_POLL 选择使用poll还是epoll
+		|-- EPollPoller.{h,cc} 基于epoll(4)的IO multiplexing封装
+		|-- PollPoller.{h,cc} 基于poll(2)的IO multiplexing封装
+	描述：Channel是对fd的封装，一个channel拥有一个fd，并且管理当前fd所关注的事件、poller返回的事件和当前fd对每种事件的回调函数。
+		  Poller是对poll/epoll的封装，它属于一个EventLoop，直接管理当前EventLoop的所有fd对应的channel。
+		  EventLoop封装了loop操作（调用poller的poll），拥有一个Poller对象，它只拥有当前活动的channel。
+	注意：这里重点理解EventLoop、Poller、Channel三个类的关系
+		
+	P27.Reactor_test03.cc 让EventLoop处理定时器事件。
+		timerfd_create把时间变成一个文件描述符，该“文件”在超时的时候变得可读，这样就可使用poll/epoll模型来统一处理IO事件和
+		定时器超时事件。对于信号也可使用signalfd来进行转化。
+		
+	P28.Timer.{h,cc} 对定时器的高层次的抽象和封装，记录了对定时器事件的处理方法，作用类似channel类（内部类）
+		TimerId.h 拥有一个Timer对象，对定时器进行标记（外部类）
+		TimerQueue.{h,cc} 对多个定时器进行管理，维护一个定时器列表，属于一个EventLoop（内部类）
+	注意：TimerQueue数据结构的选择，要求能快速根据当前时间找到已到期的定时器，也要高效的添加和删除Timer，因而可以用二叉搜索树，用map或者set，
+		  它维护两个定时器set，第一个按照到期时间和定时器地址排序，这样便于找到某个定时器之前所有到期的定时器。第二个按定时器地址和序号（即
+		  TimerId的成员属性）排序，这样便于根据TimerId快速找到某个定时器
+	这里的核心思想是：TimerQueue拥有一个timer_fd、timer_channel和根据到期时间排序的定时器列表，将TimerQueue的handleRead注册为timer_channel
+					  的readCallback，并将timer_channel注册到EventLoop，在timer_fd中总是注册最早到期的定时器。当timer_channel活跃时，通过该
+					  channel的handleEvent调用TimerQueue的handleRead，在handleRead取出所有到期的定时器，依次调用他们的callBack_进行事件处理。
+	优点：将定时器事件通过channel进行封装，实现了定时器事件和IO事件的统一处理。
+		test: muduo/net/tests/Reactor_test04.cc
+		
+	P29.通过eventfd系统调用创建一个文件描述符实现进程/线程间通信
+		eventfd是一个比pipe更高效的线程间事件通知机制，一方面它比pipe少用一个file descripor，节省了资源；另一方面，eventfd的缓冲区管理
+		也简单得多，全部“buffer”只有定长8bytes，不像pipe那样可能有不定长的真正buffer。
+		test: muduo/net/tests/Reactor_test05.cc
+	
+	P30.EventLoopThread.{h,cc} 对I/O线程进行封装（实质为Thread类，但由于使用基于对象的思想，所以该类包含了一个Thread类而不是继承Thread类）
+		主要功能为：
+			（1）EventLoopThread创建了一个线程
+			（2）在线程中创建了一个EventLoop对象并调用EventLoop::loop进行事件循环
+		test: muduo/net/tests/Reactor_test06.cc
+		
+	P31.Endian.h 封装了字节序转换函数（全局函数，位于muduo::net::sockets名称空间中）
+		SocketsOps.{h,cc} 封装了socket相关系统调用（全局函数，位于muduo::net::sockets名称空间中）
+		InetAddress.{h,cc} InetAddress对网际地址sockaddr_in的封装
+		Socket.{h,cc} Socket类用RAII方法封装socket file descriptor
+		
+	P32.Acceptor.{h,cc} Acceptor类封装了socket、bind、listen函数，拥有一个listen_fd和一个listen_channel，将listen_channel添加到poller中
+						关注listen_fd的可读事件，并将Acceptor的handleRead函数注册为listen_channel的readCallback处理新连接事件。
+						Acceptor通常不直接使用，而是作为TcpServer的成员。
+		test: muduo/net/tests/Reactor_test07.cc
+			  muduo/net/tests/Reactor_test07_asyn.cc
+		
+	P33.TcpConnection.{h,cc} 包含一个socket和channel成员，是对客户端连接的抽象
+		TcpServer.{h,cc} 对TCP服务端的抽象，包含一个Acceptor和一个TcpConnection列表
+	注意：这里要重点理解TcpServer、Acceptor、TcpConnection三者的交互关系
+		test: muduo/net/tests/Reactor_test08.cc
+			  muduo/net/tests/Reactor_test09.cc
+		
+	P34.TcpConnection生存期管理：
+		当连接断开时，函数调用如下：EventLoop.loop() -> Channel.handleEvent() -> TcpConnection.handleRead()(调用::read返回0)
+									 -> TcpConnection.handleClose() -> TcpServer.connections_.erase()(即删除当前连接)
+		此时尽管删除了TcpServer中的TcpConnection对象却不能立即销毁它，因为销毁它导致它包含的channel对象也会被销毁，然而此时
+		正在调用channel的handleEvent函数，这会导致dump，所以在connections_中的value保存为TcpConnection的shared_ptr。
+	PS：这里相对于33主要修改了TcpConnection.cc和TcpServer.cc（chnnel只是加了两行调试信息）。这里建议根据代码调试信息理解到
+		TcpConnection的引用计数变化流程，弄清楚TcpConnection对象的销毁时机（这也是主要难点）。
+		
+	P35.EventLoopThreadPool.{h,cc} 对IO线程池的封装
+		test: muduo/net/tests/Reactor_test10.cc
+	
+	P36.Buffer.{h,cc} 网络库层缓冲区的设计（目的和必要性见muduo使用手册P76）
+		muduo epoll使用LT模式的原因：
+		（1）与poll兼容
+		（2）LT模式不会发生漏掉事件的BUG，但POLLOUT事件不能一开始就关注，否则会出现busy loop，而应该在write无法完全写入内核缓冲区的时候才关注，
+			将未写入内核缓冲区的数据添加到应用层output buffer，直到应用层output buffer写完，停止关注POLLOUT事件。
+		（3）读写的时候不必等候EAGAIN，可以比ET模式少一次系统调用，降低延迟。（注：如果用ET模式，读的时候必须读到EAGAIN,写的时候直到
+			output buffer写完或者EAGAIN，因为在边沿触发时如果没有内核缓冲区状态的改变则不会引起触发）。
+		
+	P37.TcpConnection中增加send方法
+		TcpConnection中shutdown的处理方法：当用户调用send函数以后，他就认为只要网络没有问题数据就会到达对等方（类似于TCP的可靠传输保障），
+		这个可靠性保障由网络库提供，当网络库发送缓冲区还有数据而用户想要关闭连接时，网络库不能立马关闭，要等到不再关注当前连接的POLLOUT
+		事件时才能关闭（应用层数据已全部发送到内核发送缓冲区）。
+		注意：如果客户端直接close，服务端只会返回POLLIN事件。而如果服务端先shutdown(fd, SHUT_WR)，而后客户端再close，那么服务端会返回
+			  POLLIN | POLLHUP 两个事件。
+		test: muduo/net/tests/Reactor_test11.cc
+			  muduo/net/tests/Reactor_test12.cc
+			  muduo/net/tests/Test_server_shutdown.client.c
+		
+	P38.完善TcpConnection
+		添加WriteCompleteCallback回调函数的原因：在大流量应用中，发送方不断生成数据，如果对等方接收不及时，内核缓冲区被填满，受到滑动窗口的控制，
+		此时会将应用层的数据存储在网络库的发送缓冲区(output buffer)中，在大流量应用中缓冲区不断膨胀可能会撑爆output buffer（即无限扩张）。
+		解决方法就是调整发送频率，用户程序关注WriteCompleteCallback事件，当所有output buffer的数据都被拷贝到内核缓冲区时触发该事件
+		可变类型解决方案：void* 不是类型安全的
+						  boost::any 任意类型的类型安全存储以及安全的取回
+		test: muduo/net/tests/Reactor_test13.cc
+			
+	P39.muduo库对编写TCP客户端的支持
+		Connector 对客户端连接器进行封装，与Acceptor相对应
+		TcpClient Tcp客户端的封装，包含一个Connector对象
+		test: muduo/net/tests/TcpClient_test.cc
+		
+	P40.muduo http库实现
+		HttpRequest: http请求信息类封装
+		HttpResponse: http响应信息类封装
+		HttpContext: http协议解析类封装
+		HttpServer: http服务器类封装
+		test: muduo/net/http/tests/HttpServer_test.cc
+	P41.muduo inspect库实现
+		test: muduo/net/http/tests/HttpServer_test.cc
+	P42.muduo库使用示例——五个简单TCP协议
+	P43.muduo库使用示例——文件传输
+	P44.muduo库使用示例——聊天服务器
+	P45.muduo库使用示例——聊天服务器
+	P46.muduo库使用示例——测量两台机器间的往返延迟
+	P47.限制服务器最大并发连接数及用Timing wheel踢掉空闲连接
+	P48.高效多线程异步日志
+	P49.ABCBank muduo版
