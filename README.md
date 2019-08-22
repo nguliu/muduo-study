@@ -7,7 +7,7 @@ muduo是一个高质量的事件驱动型的网络库，使用的non-blocking IO
 这样我们可以很方便地把不同的socket套接字的描述符放到不同的线程去， 也可以把一些socket放到一个线程里，这样这些socket就是线程安全的，因为始终只有EventLoo所在线程在读写它们，极大的降低了我们的编程复杂性。
 
 # Envoirment
-- OS: Ubuntu 14.04
+- OS: Ubuntu 18.04
 - Complier: g++ 7.4.0
 # build
   ./build.sh
